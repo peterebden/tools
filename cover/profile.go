@@ -9,6 +9,7 @@ package cover // import "golang.org/x/tools/cover"
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"math"
 	"os"
 	"regexp"
@@ -45,9 +46,14 @@ func ParseProfiles(fileName string) ([]*Profile, error) {
 		return nil, err
 	}
 	defer pf.Close()
+	return ParseProfileData(pf)
+}
 
+// ParseProfileData parses profile data from a Reader and returns a
+// Profile for each source file described therein.
+func ParseProfileData(r io.Reader) ([]*Profile, error) {
 	files := make(map[string]*Profile)
-	buf := bufio.NewReader(pf)
+	buf := bufio.NewReader(r)
 	// First line is "mode: foo", where foo is "set", "count", or "atomic".
 	// Rest of file is in the format
 	//	encoding/base64/base64.go:34.44,37.40 3 1
